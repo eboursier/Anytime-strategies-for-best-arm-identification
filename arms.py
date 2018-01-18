@@ -43,28 +43,58 @@ class ArmGaussian(AbstractArm):
         else:
             return s
 
+class ArmBernoulli(AbstractArm):
+    
+    def __init__(self, mu=0, random_state=0):
+        """
+        Bernoulli arm
+        Args:
+             mu (float): mean parameter
+             random_state (int): seed to make experiments reproducible
+        """
+        self.mu = mu
+        super(ArmBernoulli, self).__init__(mean=mu,
+                                           variance=mu*(1-mu),
+                                           random_state=random_state)
 
-def ToyMABLinear(n):
+    def sample(self):
+        s = self.local_random.binomial(1, self.mu)
+        return s            
+
+
+def ToyMABLinear(n, mode='Gaussian', clipping=False):
 	# returns a linear instance ToyMAB of n arms
 	# as explained in the paper [1]
 
     # we shuffle it so that the order of the arms is random
     # it avoids biased results in some algorithms
-    r = np.random.randint(21578963, size=n)
-    MAB = [ArmGaussian(0.9*(n-i)/(n-1), 1/4, r[i]) for i in range(n)]
+    r = np.random.randint(21578963, size=n)    
+    if mode=='Gaussian':
+        MAB = [ArmGaussian(0.9*(n-i)/(n-1), 1/4, r[i], clipping=clipping) for i in range(n)]
+    elif mode=='Bernoulli':
+        MAB = [ArmBernoulli(0.9*(n-i)/(n-1), r[i]) for i in range(n)]
+    else:
+        raise Exception('mode has to be Gaussian or Bernoulli')
     shuffle(MAB)
     return MAB
     
 
-def ToyMABpoly(n):
+def ToyMABpoly(n, mode='Gaussian', clipping=False):
 	# returns a polynomial instance ToyMAB of n arms
 	# as explained in the paper [1]
 
     r = np.random.randint(215789623, size=n)
-    MAB = [ArmGaussian(mu=0.9, sigma2=1/4, random_state=r[0])]
-    for i in range(2, n+1):
-        MAB.append(ArmGaussian(0.9*(1-np.sqrt(i/n)), 1/4, random_state=r[i-1]))
-
+    if mode=='Gaussian':
+        MAB = [ArmGaussian(mu=0.9, sigma2=1/4, random_state=r[0], clipping=clipping)]
+        for i in range(2, n+1):
+            MAB.append(ArmGaussian(0.9*(1-np.sqrt(i/n)), 1/4, random_state=r[i-1], clipping=clipping))
+    elif mode=='Bernoulli':
+        MAB = [ArmBernoulli(mu=0.9, random_state=r[0])]
+        for i in range(2, n+1):
+            MAB.append(ArmBernoulli(0.9*(1-np.sqrt(i/n)), random_state=r[i-1]))
+    else:
+        raise Exception('mode has to be Gaussian or Bernoulli')
     shuffle(MAB)
     return MAB
+
 

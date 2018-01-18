@@ -98,7 +98,8 @@ def alternative_ATLUCB(MAB, m=1, delta1=0.01, alpha=0.5, epsilon=0, T=1000):
 	n = len(MAB)
 	MAB_means = np.zeros(n)
 	n_samples = np.zeros(n)
-
+	best = np.argpartition(MAB_means, -m)[-m:]
+	
 	recommandations = []
 	delta_S = delta1
 

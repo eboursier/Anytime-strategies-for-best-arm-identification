@@ -48,6 +48,49 @@ class GaussianPi():
 
 		return s
 
+class BernoulliPi():
+
+	"""
+	This class represents the distribution Pi_n.
+	The distribution of Pi_n is computed iteratively using this class
+	and a sample can be easily drawn from this class.
+	"""
+
+	def __init__(self, k, sigma=1/2):
+		"""
+		k is the number of arms	
+		"""	
+		# we will choose pi_1 as a uniform distribution between 0 and 1
+		# because pi_1 is constant here, pi_n corresponds at a beta distribution as
+		# described in the report
+		self.mu = np.zeros(k)
+		self.draws = np.zeros(k)
+
+		# indicate for which arms the number of draws is 0 (ie sigma is inf)
+		self.isinf = np.arange(k)
+
+
+	def update(self, r, d):
+		"""
+		Update the distribution of BernoulliPi with the new reward r from the draw d
+		"""
+
+		self.mu[d] = self.mu[d]*self.draws[d]/(self.draws[d]+1) + r/(self.draws[d]+1)
+		if d in self.isinf:
+			self.isinf = np.setdiff1d(self.isinf, d)
+		self.draws[d] += 1
+
+	def sample(self):
+		"""
+		return a sample theta following the law Pi_n
+		"""
+		s = np.random.beta(1 + self.draws*self.mu, self.draws + 1 - self.draws*self.mu)
+		# we now need to draw uniform values for the indices of infinite sigmas
+		u = np.random.rand(len(self.isinf))
+		s[self.isinf] = u
+
+		return s
+
 def TTTS(MAB, T=10000, beta=0.5, PosteriorDistrib=GaussianPi):
 	k = len(MAB)
 	Pi_n = PosteriorDistrib(k)
