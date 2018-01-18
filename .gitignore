@@ -1,0 +1,8 @@
+figures/*
+__pycache__
+scores/*
+FirstTests.ipynb
+medianelimination.py
+BestArmIdentification_fixedbudget.py
+.spyproject/
+.ipynb_checkpoints/FirstTests-checkpoint.ipynb
